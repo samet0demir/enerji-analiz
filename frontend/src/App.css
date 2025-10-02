@@ -66,7 +66,7 @@ body {
   width: 100%;
 }
 
-/* Header */
+/* Header - Full Width */
 .app-header {
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1e3a8a 100%);
   color: white;
@@ -75,6 +75,8 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  margin: 0;
 }
 
 .app-header::before {
@@ -91,14 +93,15 @@ body {
 }
 
 .header-content {
-  max-width: 1920px;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 0 var(--spacing-2xl);
+  padding: 0 var(--spacing-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 1;
+  width: 90%;
 }
 
 .header-title {
@@ -165,9 +168,9 @@ body {
   margin: 0;
 }
 
-/* Main Container - Full Width Professional Layout */
+/* Main Container - Centered Professional Layout */
 .energy-dashboard {
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   padding: 0;
   margin: 0;
@@ -176,23 +179,23 @@ body {
   background: var(--bg-primary);
 }
 
-/* Dashboard Content Container */
+/* Dashboard Content Container - Balanced centered layout */
 .dashboard-content {
   flex: 1;
-  padding: var(--spacing-xl) var(--spacing-2xl);
+  padding: var(--spacing-xl);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xl);
-  max-width: 1920px;
+  max-width: 1800px;
   margin: 0 auto;
-  width: 100%;
+  width: 90%;
 }
 
-/* Summary Cards Grid */
+/* Summary Cards Grid - Symmetric 3x2 Layout */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
   width: 100%;
 }
 
@@ -200,13 +203,17 @@ body {
   background: var(--bg-secondary);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-light);
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   text-align: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .card::before {
@@ -327,10 +334,10 @@ body {
 /* Charts Container - Professional Grid */
 .charts-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: var(--spacing-xl);
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
   width: 100%;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Chart Header Controls */
@@ -374,7 +381,7 @@ body {
 .chart-section {
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-lg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
@@ -390,9 +397,9 @@ body {
 }
 
 .chart-section h3 {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
   color: var(--text-primary);
-  font-size: 1.375rem;
+  font-size: 1.125rem;
   font-weight: 700;
   position: relative;
   padding-bottom: var(--spacing-sm);
@@ -410,7 +417,7 @@ body {
 }
 
 .chart-wrapper {
-  height: 450px;
+  height: 350px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,23 +425,23 @@ body {
 }
 
 .chart-section.wide .chart-wrapper {
-  height: 550px;
+  height: 400px;
 }
 
 /* Data Table */
 .data-table-section {
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-lg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   width: 100%;
 }
 
 .data-table-section h3 {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
   color: var(--text-primary);
-  font-size: 1.375rem;
+  font-size: 1.125rem;
   font-weight: 700;
 }
 
@@ -589,20 +596,31 @@ body {
 .card:nth-child(6) { animation-delay: 0.5s; }
 
 /* Responsive Design */
-@media (max-width: 1440px) {
+@media (max-width: 1400px) {
   .charts-container {
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-content {
+    width: 94%;
   }
 }
 
 @media (max-width: 1024px) {
-  .energy-dashboard {
-    padding: var(--spacing-xl);
+  .dashboard-content {
+    width: 92%;
+    padding: var(--spacing-md);
   }
 
   .charts-container {
     grid-template-columns: 1fr;
-    gap: var(--spacing-xl);
+    gap: var(--spacing-lg);
   }
 
   .chart-wrapper {
@@ -619,13 +637,14 @@ body {
     padding: var(--spacing-xl) var(--spacing-lg);
   }
 
-  .energy-dashboard {
-    padding: var(--spacing-lg);
-    gap: var(--spacing-xl);
+  .dashboard-content {
+    width: calc(100% - 1rem);
+    padding: var(--spacing-md);
+    gap: var(--spacing-lg);
   }
 
   .summary-cards {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
   }
 
@@ -670,7 +689,7 @@ body {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .summary-cards {
     grid-template-columns: 1fr;
   }
