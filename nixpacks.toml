@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs-22_x"]
 
 [phases.install]
-cmds = ["cd backend && npm ci --omit=dev"]
+cmds = ["cd backend && npm install"]
 
 [phases.build]
 cmds = ["cd backend && npm run build"]
