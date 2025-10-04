@@ -1,1 +1,45 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production
+dist/
+build/
+*/dist/
+*/build/
+
+# Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+data/*.db
+
+# Environment
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Claude
 .claude/
+
+# Misc
+*.tsbuildinfo
+.cache/
