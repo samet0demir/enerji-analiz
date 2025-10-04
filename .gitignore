@@ -43,3 +43,6 @@ npm-debug.log*
 # Misc
 *.tsbuildinfo
 .cache/
+
+# Railway
+.railway/
