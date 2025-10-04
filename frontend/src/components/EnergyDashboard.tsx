@@ -73,7 +73,7 @@ const EnergyDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<string>('24');
   const [sourceChartMode, setSourceChartMode] = useState<'current' | 'timeRange'>('current');
 
-  const API_BASE_URL = 'http://localhost:5003/api/v1';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://enerji-analiz-production.up.railway.app/api/v1';
 
   const fetchData = useCallback(async (isTimeRangeChange = false) => {
     // Debounce for time range changes to prevent spam

@@ -7,7 +7,7 @@ function App() {
   const [totalRecords, setTotalRecords] = useState<number | null>(null)
   const [apiStatus, setApiStatus] = useState<string>('Yükleniyor...')
 
-  const API_BASE_URL = 'http://localhost:5003/api/v1'
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://enerji-analiz-production.up.railway.app/api/v1'
 
   useEffect(() => {
     const fetchStats = async () => {
