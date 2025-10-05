@@ -2,9 +2,6 @@
   "name": "energy-analytics",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "backend"
-  ],
   "scripts": {
     "build": "npm install && npm run build",
     "start": "npm start"
