@@ -105,8 +105,8 @@ const EnergyDashboard: React.FC = () => {
         axios.get(`${API_BASE_URL}/energy/stats?hours=${timeRange}`),
         axios.get(`${API_BASE_URL}/ptf/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
         axios.get(`${API_BASE_URL}/consumption/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_BASE_URL}/ptf/latest?hours=1000`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_BASE_URL}/consumption/latest?hours=1000`).catch(() => ({ data: { data: [] } }))
+        axios.get(`${API_BASE_URL}/ptf/latest?hours=8760`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_BASE_URL}/consumption/latest?hours=8760`).catch(() => ({ data: { data: [] } }))
       ]);
 
       setRealtimeData(realtimeResponse.data.data);

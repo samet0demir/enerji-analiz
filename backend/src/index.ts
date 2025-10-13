@@ -69,15 +69,10 @@ app.get('/api/v1/test', (req, res) => {
 // Energy endpoints (with API rate limiting)
 app.get('/api/v1/energy/realtime', apiLimiter, async (req, res) => {
   try {
-    const data = await getRealTimeGeneration();
-
-    // Save fresh data to database
-    try {
-      const saveResult = saveEnergyData(data);
-      console.log(`💾 Data saved: ${saveResult.inserted} new, ${saveResult.updated} updated`);
-    } catch (dbError) {
-      console.warn('Database save failed:', dbError);
-    }
+    // READ FROM DATABASE ONLY - Scheduler collects data automatically
+    const { hours = '24' } = req.query;
+    const hoursNumber = parseInt(hours as string) || 24;
+    const data = getRecentEnergyData(hoursNumber);
 
     res.json({
       success: true,
