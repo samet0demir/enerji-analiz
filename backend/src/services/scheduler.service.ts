@@ -18,7 +18,7 @@ const formatDateForEpias = (date: Date): string => {
 export const startDataCollection = () => {
   // Her 1 saatte bir EPİAŞ verilerini kontrol et ve varsa database'e kaydet
   // (EPİAŞ verileri 3-4 saat gecikmeli yayınlanıyor, 15 dakika gereksiz)
-  dataCollectionJob = cron.schedule('0 * * * *', async () => {
+  const job = cron.schedule('0 * * * *', async () => {
     const startTime = Date.now();
     console.log('🔄 Starting scheduled data collection...');
 
@@ -91,10 +91,15 @@ export const startDataCollection = () => {
     timezone: "Europe/Istanbul"
   });
 
+  // Store and start the job immediately
+  dataCollectionJob = job;
+  job.start();
+
   console.log('⏰ Data collection scheduler initialized (every 1 hour)');
   console.log('📊 Collecting: Production, PTF (Prices), Consumption, and Weather data');
   console.log('💡 Note: EPİAŞ data has 3-4 hour delay, 1-hour interval is optimal');
   console.log('🌤️  Weather: Real-time data from Open-Meteo (Istanbul)');
+  console.log('✅ Scheduler auto-started');
   return dataCollectionJob;
 };
 
