@@ -105,8 +105,8 @@ const EnergyDashboard: React.FC = () => {
         axios.get(`${API_BASE_URL}/energy/stats?hours=${timeRange}`),
         axios.get(`${API_BASE_URL}/ptf/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
         axios.get(`${API_BASE_URL}/consumption/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_BASE_URL}/ptf/latest?hours=720`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_BASE_URL}/consumption/latest?hours=720`).catch(() => ({ data: { data: [] } }))
+        axios.get(`${API_BASE_URL}/ptf/latest?hours=1000`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_BASE_URL}/consumption/latest?hours=1000`).catch(() => ({ data: { data: [] } }))
       ]);
 
       setRealtimeData(realtimeResponse.data.data);
@@ -119,10 +119,21 @@ const EnergyDashboard: React.FC = () => {
       setPriceDataLong(priceResponseLong.data.data || []);
       setConsumptionDataLong(consumptionResponseLong.data.data || []);
 
-      // Son güncelleme zamanını hesapla
+      // Son güncelleme zamanını hesapla ve formatla
       if (realtimeResponse.data.data && realtimeResponse.data.data.length > 0) {
         const latestData = realtimeResponse.data.data[realtimeResponse.data.data.length - 1];
-        setLastUpdateTime(latestData.date + ' ' + latestData.hour);
+        const dateStr = latestData.date; // "2025-10-13T22:00:00+03:00"
+        const hourStr = latestData.hour; // "22:00"
+
+        // Tarihi daha okunabilir formata çevir
+        const dateObj = new Date(dateStr);
+        const formattedDate = dateObj.toLocaleDateString('tr-TR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        });
+
+        setLastUpdateTime(`${formattedDate} - Saat ${hourStr}`);
       }
 
       setError(null);
@@ -354,24 +365,27 @@ const EnergyDashboard: React.FC = () => {
           <div className="freshness-content">
             <span className="freshness-icon">🕐</span>
             <div className="freshness-info">
-              <h4>Son Veri Güncellemesi</h4>
-              <p className="freshness-time">{lastUpdateTime || summaryData?.latestHour || 'Yükleniyor...'}</p>
+              <h4>SON VERİ GÜNCELLEMESİ</h4>
+              <p className="freshness-time">{lastUpdateTime || 'Yükleniyor...'}</p>
               <p className="freshness-note">
-                ⚠️ EPİAŞ verileri 2-4 saat gecikmelidir. Bu normal bir durumdur.
+                ⚠️ EPİAŞ API'si 2-4 saat gecikmeli veri yayınlar (tüm sistemlerde böyledir)
               </p>
             </div>
             <div className="freshness-stats">
               <div className="freshness-stat">
                 <span className="stat-value">{priceDataLong.length}</span>
-                <span className="stat-label">PTF Kayıt</span>
+                <span className="stat-label">Fiyat Verisi</span>
+                <span className="stat-sublabel">{priceDataLong.length > 0 ? `${Math.floor(priceDataLong.length / 24)} gün` : ''}</span>
               </div>
               <div className="freshness-stat">
                 <span className="stat-value">{consumptionDataLong.length}</span>
-                <span className="stat-label">Tüketim Kayıt</span>
+                <span className="stat-label">Tüketim Verisi</span>
+                <span className="stat-sublabel">{consumptionDataLong.length > 0 ? `${Math.floor(consumptionDataLong.length / 24)} gün` : ''}</span>
               </div>
               <div className="freshness-stat">
                 <span className="stat-value">{stats?.totalRecords || 0}</span>
-                <span className="stat-label">Üretim Kayıt</span>
+                <span className="stat-label">Üretim Verisi</span>
+                <span className="stat-sublabel">{stats?.totalRecords ? `${Math.floor(stats.totalRecords / 24)} gün` : ''}</span>
               </div>
             </div>
           </div>
@@ -563,10 +577,10 @@ const EnergyDashboard: React.FC = () => {
           <ConsumptionChart data={consumptionData} />
         </div>
 
-        {/* 30-Day Trends */}
+        {/* Long-term Trends */}
         {priceDataLong.length > 0 && (
           <div className="chart-section wide">
-            <h3>📈 30 Günlük Elektrik Fiyatı Trendi (PTF)</h3>
+            <h3>📈 Elektrik Fiyatı Uzun Dönem Trendi - {Math.floor(priceDataLong.length / 24)} Gün ({priceDataLong.length} saat)</h3>
             <div className="chart-wrapper" style={{ height: '400px' }}>
               <Line
                 data={{
@@ -604,7 +618,7 @@ const EnergyDashboard: React.FC = () => {
 
         {consumptionDataLong.length > 0 && (
           <div className="chart-section wide">
-            <h3>📉 30 Günlük Enerji Tüketimi Trendi</h3>
+            <h3>📉 Enerji Tüketimi Uzun Dönem Trendi - {Math.floor(consumptionDataLong.length / 24)} Gün ({consumptionDataLong.length} saat)</h3>
             <div className="chart-wrapper" style={{ height: '400px' }}>
               <Line
                 data={{
