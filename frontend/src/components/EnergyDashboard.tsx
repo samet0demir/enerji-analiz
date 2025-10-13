@@ -13,6 +13,9 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import PriceChart from './PriceChart';
+import ConsumptionChart from './ConsumptionChart';
+import WeatherWidget from './WeatherWidget';
 
 ChartJS.register(
   CategoryScale,
@@ -68,6 +71,9 @@ const EnergyDashboard: React.FC = () => {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [historicalData, setHistoricalData] = useState<EnergyData[]>([]);
   const [stats, setStats] = useState<StatsData | null>(null);
+  const [priceData, setPriceData] = useState<any[]>([]);
+  const [consumptionData, setConsumptionData] = useState<any[]>([]);
+  const [weatherData, setWeatherData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<string>('24');
@@ -82,11 +88,22 @@ const EnergyDashboard: React.FC = () => {
     }
     try {
       setLoading(true);
-      const [realtimeResponse, summaryResponse, historyResponse, statsResponse] = await Promise.all([
+      const [
+        realtimeResponse,
+        summaryResponse,
+        historyResponse,
+        statsResponse,
+        priceResponse,
+        consumptionResponse,
+        weatherResponse
+      ] = await Promise.all([
         axios.get(`${API_BASE_URL}/energy/realtime`),
         axios.get(`${API_BASE_URL}/energy/summary?hours=${timeRange}`),
         axios.get(`${API_BASE_URL}/energy/history?hours=${timeRange}`),
-        axios.get(`${API_BASE_URL}/energy/stats?hours=${timeRange}`)
+        axios.get(`${API_BASE_URL}/energy/stats?hours=${timeRange}`),
+        axios.get(`${API_BASE_URL}/ptf/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_BASE_URL}/consumption/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_BASE_URL}/weather/latest?hours=${timeRange}&city=Istanbul`).catch(() => ({ data: { data: [] } }))
       ]);
 
       setRealtimeData(realtimeResponse.data.data);
@@ -94,6 +111,9 @@ const EnergyDashboard: React.FC = () => {
       // Historical data'yı ters çevir - en eski solda, en yeni sağda olsun
       setHistoricalData(historyResponse.data.data.reverse());
       setStats(statsResponse.data.stats);
+      setPriceData(priceResponse.data.data || []);
+      setConsumptionData(consumptionResponse.data.data || []);
+      setWeatherData(weatherResponse.data.data || []);
       setError(null);
     } catch (error: unknown) {
       setError('Veri yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)));
@@ -101,7 +121,7 @@ const EnergyDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [timeRange]);
+  }, [timeRange, API_BASE_URL]);
 
   useEffect(() => {
     fetchData(true); // Time range change için debounce
@@ -499,6 +519,22 @@ const EnergyDashboard: React.FC = () => {
               />
             )}
           </div>
+        </div>
+
+        {/* NEW: Price, Consumption, Weather Section */}
+        <div className="chart-section wide">
+          <h3>💰 Elektrik Fiyatı (PTF) - {timeRange} Saat</h3>
+          <PriceChart data={priceData} />
+        </div>
+
+        <div className="chart-section wide">
+          <h3>⚡ Enerji Tüketimi - {timeRange} Saat</h3>
+          <ConsumptionChart data={consumptionData} />
+        </div>
+
+        <div className="chart-section">
+          <h3>🌤️ Hava Durumu - İstanbul</h3>
+          <WeatherWidget data={weatherData} />
         </div>
       </div>
 
