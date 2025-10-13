@@ -1102,3 +1102,147 @@ body {
     font-size: 2rem;
   }
 }
+
+/* ========== Data Freshness Banner ========== */
+.data-freshness-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.freshness-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+}
+
+.freshness-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.freshness-info {
+  flex: 1;
+}
+
+.freshness-info h4 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  color: #92400e;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.freshness-time {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #78350f;
+  margin: 0 0 var(--spacing-xs) 0;
+  font-family: 'Courier New', monospace;
+}
+
+.freshness-note {
+  font-size: 0.875rem;
+  color: #92400e;
+  margin: 0;
+  font-weight: 500;
+}
+
+.freshness-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.freshness-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-md);
+  min-width: 100px;
+}
+
+.freshness-stat .stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #78350f;
+  line-height: 1;
+  margin-bottom: var(--spacing-xs);
+}
+
+.freshness-stat .stat-label {
+  font-size: 0.75rem;
+  color: #92400e;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Enhanced Summary Cards */
+.summary-cards {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+.card.highlight {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #3b82f6;
+  transform: scale(1.05);
+}
+
+.card.success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+}
+
+.card .big-number .unit {
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.7;
+  margin-left: 0.25rem;
+}
+
+/* Responsive Freshness Banner */
+@media (max-width: 1024px) {
+  .freshness-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .freshness-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .freshness-icon {
+    font-size: 2rem;
+  }
+
+  .freshness-time {
+    font-size: 1.25rem;
+  }
+
+  .freshness-stats {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .freshness-stat {
+    width: 100%;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr !important;
+  }
+}

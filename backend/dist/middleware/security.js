@@ -32,7 +32,7 @@ exports.strictLimiter = (0, express_rate_limit_1.default)({
 // Rate limiting for API endpoints specifically
 exports.apiLimiter = (0, express_rate_limit_1.default)({
     windowMs: 1 * 60 * 1000, // 1 minute
-    max: process.env.NODE_ENV === 'development' ? 500 : 30, // Development'te çok gevşek
+    max: process.env.NODE_ENV === 'development' ? 500 : 100, // Production: 100 req/min (eski: 30)
     message: {
         error: 'API rate limit exceeded. Please try again after 1 minute.',
         retryAfter: '1 minute'

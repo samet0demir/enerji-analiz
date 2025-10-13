@@ -15,7 +15,6 @@ import {
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import PriceChart from './PriceChart';
 import ConsumptionChart from './ConsumptionChart';
-import WeatherWidget from './WeatherWidget';
 
 ChartJS.register(
   CategoryScale,
@@ -73,11 +72,13 @@ const EnergyDashboard: React.FC = () => {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [priceData, setPriceData] = useState<any[]>([]);
   const [consumptionData, setConsumptionData] = useState<any[]>([]);
-  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [priceDataLong, setPriceDataLong] = useState<any[]>([]);
+  const [consumptionDataLong, setConsumptionDataLong] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<string>('24');
   const [sourceChartMode, setSourceChartMode] = useState<'current' | 'timeRange'>('current');
+  const [lastUpdateTime, setLastUpdateTime] = useState<string>('');
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://enerji-analiz-production.up.railway.app/api/v1';
 
@@ -95,7 +96,8 @@ const EnergyDashboard: React.FC = () => {
         statsResponse,
         priceResponse,
         consumptionResponse,
-        weatherResponse
+        priceResponseLong,
+        consumptionResponseLong
       ] = await Promise.all([
         axios.get(`${API_BASE_URL}/energy/realtime`),
         axios.get(`${API_BASE_URL}/energy/summary?hours=${timeRange}`),
@@ -103,7 +105,8 @@ const EnergyDashboard: React.FC = () => {
         axios.get(`${API_BASE_URL}/energy/stats?hours=${timeRange}`),
         axios.get(`${API_BASE_URL}/ptf/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
         axios.get(`${API_BASE_URL}/consumption/latest?hours=${timeRange}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_BASE_URL}/weather/latest?hours=${timeRange}&city=Istanbul`).catch(() => ({ data: { data: [] } }))
+        axios.get(`${API_BASE_URL}/ptf/latest?hours=720`).catch(() => ({ data: { data: [] } })),
+        axios.get(`${API_BASE_URL}/consumption/latest?hours=720`).catch(() => ({ data: { data: [] } }))
       ]);
 
       setRealtimeData(realtimeResponse.data.data);
@@ -113,7 +116,15 @@ const EnergyDashboard: React.FC = () => {
       setStats(statsResponse.data.stats);
       setPriceData(priceResponse.data.data || []);
       setConsumptionData(consumptionResponse.data.data || []);
-      setWeatherData(weatherResponse.data.data || []);
+      setPriceDataLong(priceResponseLong.data.data || []);
+      setConsumptionDataLong(consumptionResponseLong.data.data || []);
+
+      // Son güncelleme zamanını hesapla
+      if (realtimeResponse.data.data && realtimeResponse.data.data.length > 0) {
+        const latestData = realtimeResponse.data.data[realtimeResponse.data.data.length - 1];
+        setLastUpdateTime(latestData.date + ' ' + latestData.hour);
+      }
+
       setError(null);
     } catch (error: unknown) {
       setError('Veri yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)));
@@ -338,31 +349,51 @@ const EnergyDashboard: React.FC = () => {
   return (
     <div className="energy-dashboard">
       <div className="dashboard-content">
+        {/* Data Freshness Banner */}
+        <div className="data-freshness-banner">
+          <div className="freshness-content">
+            <span className="freshness-icon">🕐</span>
+            <div className="freshness-info">
+              <h4>Son Veri Güncellemesi</h4>
+              <p className="freshness-time">{lastUpdateTime || summaryData?.latestHour || 'Yükleniyor...'}</p>
+              <p className="freshness-note">
+                ⚠️ EPİAŞ verileri 2-4 saat gecikmelidir. Bu normal bir durumdur.
+              </p>
+            </div>
+            <div className="freshness-stats">
+              <div className="freshness-stat">
+                <span className="stat-value">{priceDataLong.length}</span>
+                <span className="stat-label">PTF Kayıt</span>
+              </div>
+              <div className="freshness-stat">
+                <span className="stat-value">{consumptionDataLong.length}</span>
+                <span className="stat-label">Tüketim Kayıt</span>
+              </div>
+              <div className="freshness-stat">
+                <span className="stat-value">{stats?.totalRecords || 0}</span>
+                <span className="stat-label">Üretim Kayıt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Summary Cards */}
         <div className="summary-cards">
-        <div className="card">
-          <h3>Şu Anki Saatlik Üretim</h3>
-          <p className="big-number">{summaryData?.currentHourTotal} MWh</p>
+        <div className="card highlight">
+          <h3>⚡ Şu Anki Saatlik Üretim</h3>
+          <p className="big-number">{summaryData?.currentHourTotal} <span className="unit">MWh</span></p>
         </div>
         <div className="card">
-          <h3>Seçilen Dönem Ortalama</h3>
-          <p className="big-number">{getTimeRangeAverage()?.toFixed(1) || 'N/A'} MWh</p>
+          <h3>📊 Seçilen Dönem Ortalama</h3>
+          <p className="big-number">{getTimeRangeAverage()?.toFixed(1) || 'N/A'} <span className="unit">MWh</span></p>
         </div>
         <div className="card">
-          <h3>Seçilen Dönem Max</h3>
-          <p className="big-number">{getTimeRangeMax()?.toFixed(1) || 'N/A'} MWh</p>
+          <h3>📈 Seçilen Dönem Max</h3>
+          <p className="big-number">{getTimeRangeMax()?.toFixed(1) || 'N/A'} <span className="unit">MWh</span></p>
         </div>
-        <div className="card">
-          <h3>Yenilenebilir Oranı</h3>
-          <p className="big-number">{getRenewablePercentage()?.toFixed(1) || 'N/A'}%</p>
-        </div>
-        <div className="card">
-          <h3>Son Güncelleme</h3>
-          <p className="big-number">{summaryData?.latestHour}</p>
-        </div>
-        <div className="card">
-          <h3>Toplam Kayıt</h3>
-          <p className="big-number">{stats?.totalRecords || summaryData?.dataPoints}</p>
+        <div className="card success">
+          <h3>🌱 Yenilenebilir Oranı</h3>
+          <p className="big-number">{getRenewablePercentage()?.toFixed(1) || 'N/A'}<span className="unit">%</span></p>
         </div>
       </div>
 
@@ -521,21 +552,93 @@ const EnergyDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* NEW: Price, Consumption, Weather Section */}
+        {/* NEW: Price and Consumption Section */}
         <div className="chart-section wide">
-          <h3>💰 Elektrik Fiyatı (PTF) - {timeRange} Saat</h3>
+          <h3>💰 Elektrik Fiyatı (PTF) - Son {timeRange} Saat</h3>
           <PriceChart data={priceData} />
         </div>
 
         <div className="chart-section wide">
-          <h3>⚡ Enerji Tüketimi - {timeRange} Saat</h3>
+          <h3>⚡ Enerji Tüketimi - Son {timeRange} Saat</h3>
           <ConsumptionChart data={consumptionData} />
         </div>
 
-        <div className="chart-section">
-          <h3>🌤️ Hava Durumu - İstanbul</h3>
-          <WeatherWidget data={weatherData} />
-        </div>
+        {/* 30-Day Trends */}
+        {priceDataLong.length > 0 && (
+          <div className="chart-section wide">
+            <h3>📈 30 Günlük Elektrik Fiyatı Trendi (PTF)</h3>
+            <div className="chart-wrapper" style={{ height: '400px' }}>
+              <Line
+                data={{
+                  labels: priceDataLong.map((_, i) => i % 24 === 0 ? `Gün ${Math.floor(i / 24) + 1}` : ''),
+                  datasets: [{
+                    label: 'PTF (TL/MWh)',
+                    data: priceDataLong.map(d => d.price),
+                    borderColor: 'rgb(234, 88, 12)',
+                    backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 0,
+                    borderWidth: 2,
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: true },
+                    title: {
+                      display: true,
+                      text: `${priceDataLong.length} saatlik veri (${Math.floor(priceDataLong.length / 24)} gün)`
+                    }
+                  },
+                  scales: {
+                    y: { beginAtZero: false },
+                    x: { display: true, ticks: { maxRotation: 0 } }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {consumptionDataLong.length > 0 && (
+          <div className="chart-section wide">
+            <h3>📉 30 Günlük Enerji Tüketimi Trendi</h3>
+            <div className="chart-wrapper" style={{ height: '400px' }}>
+              <Line
+                data={{
+                  labels: consumptionDataLong.map((_, i) => i % 24 === 0 ? `Gün ${Math.floor(i / 24) + 1}` : ''),
+                  datasets: [{
+                    label: 'Tüketim (MW)',
+                    data: consumptionDataLong.map(d => d.consumption),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 0,
+                    borderWidth: 2,
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: true },
+                    title: {
+                      display: true,
+                      text: `${consumptionDataLong.length} saatlik veri (${Math.floor(consumptionDataLong.length / 24)} gün)`
+                    }
+                  },
+                  scales: {
+                    y: { beginAtZero: true },
+                    x: { display: true, ticks: { maxRotation: 0 } }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Real-time Data Table */}

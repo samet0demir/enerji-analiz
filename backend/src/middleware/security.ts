@@ -30,7 +30,7 @@ export const strictLimiter = rateLimit({
 // Rate limiting for API endpoints specifically
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: process.env.NODE_ENV === 'development' ? 500 : 30, // Development'te çok gevşek
+  max: process.env.NODE_ENV === 'development' ? 500 : 100, // Production: 100 req/min (eski: 30)
   message: {
     error: 'API rate limit exceeded. Please try again after 1 minute.',
     retryAfter: '1 minute'
