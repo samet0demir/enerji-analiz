@@ -263,3 +263,224 @@ export const logDataCollection = (status: string, recordsInserted: number, recor
 
   stmt.run(status, recordsInserted, recordsUpdated, errorMessage || null, executionTimeMs || null);
 };
+
+// ========== PTF DATA FUNCTIONS ==========
+
+interface PtfData {
+  date: string;
+  hour: string;
+  price: number;
+  priceUsd?: number;
+  priceEur?: number;
+}
+
+export const savePtfData = (data: any[]): { inserted: number; updated: number } => {
+  const db = getSQLiteDb();
+  let inserted = 0;
+  let updated = 0;
+
+  const insertStmt = db.prepare(`
+    INSERT OR REPLACE INTO ptf_data (
+      date, hour, price_try, price_usd, price_eur, updated_at
+    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+  `);
+
+  const checkStmt = db.prepare('SELECT id FROM ptf_data WHERE date = ? AND hour = ?');
+
+  const transaction = db.transaction(() => {
+    for (const record of data) {
+      const existing = checkStmt.get(record.date, record.hour);
+
+      insertStmt.run(
+        record.date,
+        record.hour,
+        record.price || 0,
+        record.priceUsd || 0,
+        record.priceEur || 0
+      );
+
+      if (existing) {
+        updated++;
+      } else {
+        inserted++;
+      }
+    }
+  });
+
+  transaction();
+  return { inserted, updated };
+};
+
+export const getRecentPtfData = (hours: number = 24): PtfData[] => {
+  const db = getSQLiteDb();
+
+  const stmt = db.prepare(`
+    SELECT * FROM ptf_data
+    ORDER BY date DESC, hour DESC
+    LIMIT ?
+  `);
+
+  const rows = stmt.all(hours) as any[];
+
+  return rows.map(row => ({
+    date: row.date,
+    hour: row.hour,
+    price: row.price_try,
+    priceUsd: row.price_usd,
+    priceEur: row.price_eur
+  }));
+};
+
+// ========== CONSUMPTION DATA FUNCTIONS ==========
+
+interface ConsumptionData {
+  date: string;
+  hour: string;
+  consumption: number;
+}
+
+export const saveConsumptionData = (data: any[]): { inserted: number; updated: number } => {
+  const db = getSQLiteDb();
+  let inserted = 0;
+  let updated = 0;
+
+  const insertStmt = db.prepare(`
+    INSERT OR REPLACE INTO consumption_data (
+      date, hour, consumption, updated_at
+    ) VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+  `);
+
+  const checkStmt = db.prepare('SELECT id FROM consumption_data WHERE date = ? AND hour = ?');
+
+  const transaction = db.transaction(() => {
+    for (const record of data) {
+      // Parse hour from "time" field (response has "time": "00:00")
+      const hour = record.time || record.hour;
+
+      const existing = checkStmt.get(record.date, hour);
+
+      insertStmt.run(
+        record.date,
+        hour,
+        record.consumption || 0
+      );
+
+      if (existing) {
+        updated++;
+      } else {
+        inserted++;
+      }
+    }
+  });
+
+  transaction();
+  return { inserted, updated };
+};
+
+export const getRecentConsumptionData = (hours: number = 24): ConsumptionData[] => {
+  const db = getSQLiteDb();
+
+  const stmt = db.prepare(`
+    SELECT * FROM consumption_data
+    ORDER BY date DESC, hour DESC
+    LIMIT ?
+  `);
+
+  const rows = stmt.all(hours) as any[];
+
+  return rows.map(row => ({
+    date: row.date,
+    hour: row.hour,
+    consumption: row.consumption
+  }));
+};
+
+// ========== WEATHER DATA FUNCTIONS ==========
+
+interface WeatherData {
+  date: string;
+  hour: string;
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  direct_radiation: number;
+  precipitation: number;
+  cloudcover: number;
+  humidity: number;
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+
+export const saveWeatherData = (data: WeatherData[]): { inserted: number; updated: number } => {
+  const db = getSQLiteDb();
+  let inserted = 0;
+  let updated = 0;
+
+  const insertStmt = db.prepare(`
+    INSERT OR REPLACE INTO weather_data (
+      date, hour, temperature, windspeed, winddirection, direct_radiation,
+      precipitation, cloudcover, humidity, city, latitude, longitude, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+  `);
+
+  const checkStmt = db.prepare('SELECT id FROM weather_data WHERE date = ? AND hour = ? AND city = ?');
+
+  const transaction = db.transaction(() => {
+    for (const record of data) {
+      const existing = checkStmt.get(record.date, record.hour, record.city);
+
+      insertStmt.run(
+        record.date,
+        record.hour,
+        record.temperature,
+        record.windspeed,
+        record.winddirection,
+        record.direct_radiation,
+        record.precipitation,
+        record.cloudcover,
+        record.humidity,
+        record.city,
+        record.latitude,
+        record.longitude
+      );
+
+      if (existing) {
+        updated++;
+      } else {
+        inserted++;
+      }
+    }
+  });
+
+  transaction();
+  return { inserted, updated };
+};
+
+export const getRecentWeatherData = (hours: number = 24, city: string = 'Istanbul'): WeatherData[] => {
+  const db = getSQLiteDb();
+
+  const stmt = db.prepare(`
+    SELECT * FROM weather_data
+    WHERE city = ?
+    ORDER BY date DESC, hour DESC
+    LIMIT ?
+  `);
+
+  const rows = stmt.all(city, hours) as any[];
+
+  return rows.map(row => ({
+    date: row.date,
+    hour: row.hour,
+    temperature: row.temperature,
+    windspeed: row.windspeed,
+    winddirection: row.winddirection,
+    direct_radiation: row.direct_radiation,
+    precipitation: row.precipitation,
+    cloudcover: row.cloudcover,
+    humidity: row.humidity,
+    city: row.city,
+    latitude: row.latitude,
+    longitude: row.longitude
+  }));
+};

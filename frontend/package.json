@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "vite preview --host 0.0.0.0 --port $PORT",
     "postinstall": "chmod +x ./node_modules/.bin/vite"
   },
   "dependencies": {

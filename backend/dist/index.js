@@ -18,6 +18,8 @@ const security_1 = require("./middleware/security");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5001;
+// Trust proxy for Railway deployment
+app.set('trust proxy', 1);
 // Security middleware
 app.use(security_1.securityHeaders);
 app.use(security_1.responseCompression);
@@ -345,6 +347,73 @@ app.post('/api/v1/data/collect-historical', security_1.strictLimiter, async (req
             success: false,
             error: 'Historical data collection failed',
             message: error.message
+        });
+    }
+});
+// PTF (Electricity Price) endpoints
+app.get('/api/v1/ptf/latest', security_1.apiLimiter, async (req, res) => {
+    try {
+        const { hours = '24' } = req.query;
+        const hoursNumber = parseInt(hours) || 24;
+        const data = (0, database_service_1.getRecentPtfData)(hoursNumber);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            count: data.length,
+            data: data
+        });
+    }
+    catch (error) {
+        console.error('Error in /ptf/latest endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch PTF data',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
+    }
+});
+// Consumption endpoints
+app.get('/api/v1/consumption/latest', security_1.apiLimiter, async (req, res) => {
+    try {
+        const { hours = '24' } = req.query;
+        const hoursNumber = parseInt(hours) || 24;
+        const data = (0, database_service_1.getRecentConsumptionData)(hoursNumber);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            count: data.length,
+            data: data
+        });
+    }
+    catch (error) {
+        console.error('Error in /consumption/latest endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch consumption data',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        });
+    }
+});
+// Weather endpoints
+app.get('/api/v1/weather/latest', security_1.apiLimiter, async (req, res) => {
+    try {
+        const { hours = '24', city = 'Istanbul' } = req.query;
+        const hoursNumber = parseInt(hours) || 24;
+        const data = (0, database_service_1.getRecentWeatherData)(hoursNumber, city);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            city: city,
+            count: data.length,
+            data: data
+        });
+    }
+    catch (error) {
+        console.error('Error in /weather/latest endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch weather data',
+            message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 });

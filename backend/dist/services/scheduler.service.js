@@ -37,20 +37,70 @@ exports.cleanup = exports.triggerDataCollection = exports.getSchedulerStatus = e
 const cron = __importStar(require("node-cron"));
 const epias_service_1 = require("./epias.service");
 const database_service_1 = require("./database.service");
+const weather_service_1 = require("./weather.service");
 let dataCollectionJob = null;
+/**
+ * Helper to format date for EPİAŞ API (YYYY-MM-DDTHH:mm:ss+03:00)
+ */
+const formatDateForEpias = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00+03:00`;
+};
 const startDataCollection = () => {
-    // Her 15 dakikada bir EPİAŞ verilerini kontrol et ve varsa database'e kaydet
-    dataCollectionJob = cron.schedule('*/15 * * * *', async () => {
+    // Her 1 saatte bir EPİAŞ verilerini kontrol et ve varsa database'e kaydet
+    // (EPİAŞ verileri 3-4 saat gecikmeli yayınlanıyor, 15 dakika gereksiz)
+    dataCollectionJob = cron.schedule('0 * * * *', async () => {
         const startTime = Date.now();
         console.log('🔄 Starting scheduled data collection...');
         try {
-            // EPİAŞ'tan real-time verileri çek
+            // ========== 1. ENERGY PRODUCTION DATA ==========
             const data = await (0, epias_service_1.getRealTimeGeneration)();
-            console.log(`📊 Fetched ${data.length} energy records from EPİAŞ`);
-            // Database'e kaydet
+            console.log(`📊 Fetched ${data.length} energy production records from EPİAŞ`);
             const saveResult = (0, database_service_1.saveEnergyData)(data);
+            console.log(`💾 Energy data saved: ${saveResult.inserted} new, ${saveResult.updated} updated`);
+            // ========== 2. PTF (PRICE) DATA ==========
+            try {
+                // Get last 24 hours of PTF data
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const ptfData = await (0, epias_service_1.getPtfData)(formatDateForEpias(yesterday), formatDateForEpias(today));
+                console.log(`💰 Fetched ${ptfData.length} PTF records from EPİAŞ`);
+                const ptfResult = (0, database_service_1.savePtfData)(ptfData);
+                console.log(`💾 PTF data saved: ${ptfResult.inserted} new, ${ptfResult.updated} updated`);
+            }
+            catch (ptfError) {
+                console.error('⚠️  PTF data collection failed:', ptfError.message);
+            }
+            // ========== 3. CONSUMPTION DATA ==========
+            try {
+                // Get last 24 hours of consumption data
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const consumptionData = await (0, epias_service_1.getConsumptionData)(formatDateForEpias(yesterday), formatDateForEpias(today));
+                console.log(`⚡ Fetched ${consumptionData.length} consumption records from EPİAŞ`);
+                const consumptionResult = (0, database_service_1.saveConsumptionData)(consumptionData);
+                console.log(`💾 Consumption data saved: ${consumptionResult.inserted} new, ${consumptionResult.updated} updated`);
+            }
+            catch (consumptionError) {
+                console.error('⚠️  Consumption data collection failed:', consumptionError.message);
+            }
+            // ========== 4. WEATHER DATA (ISTANBUL) ==========
+            try {
+                console.log('🌤️  Fetching current weather data for Istanbul...');
+                const weatherData = await (0, weather_service_1.getCurrentWeather)('Istanbul');
+                console.log(`🌤️  Fetched ${weatherData.length} weather records from Open-Meteo`);
+                const weatherResult = (0, database_service_1.saveWeatherData)(weatherData);
+                console.log(`💾 Weather data saved: ${weatherResult.inserted} new, ${weatherResult.updated} updated`);
+            }
+            catch (weatherError) {
+                console.error('⚠️  Weather data collection failed:', weatherError.message);
+            }
             const executionTime = Date.now() - startTime;
-            console.log(`💾 Data collection completed: ${saveResult.inserted} new, ${saveResult.updated} updated (${executionTime}ms)`);
+            console.log(`✅ Scheduled data collection completed (${executionTime}ms)`);
             // Log success
             (0, database_service_1.logDataCollection)('success', saveResult.inserted, saveResult.updated, undefined, executionTime);
         }
@@ -63,7 +113,10 @@ const startDataCollection = () => {
     }, {
         timezone: "Europe/Istanbul"
     });
-    console.log('⏰ Data collection scheduler initialized (every 15 minutes)');
+    console.log('⏰ Data collection scheduler initialized (every 1 hour)');
+    console.log('📊 Collecting: Production, PTF (Prices), Consumption, and Weather data');
+    console.log('💡 Note: EPİAŞ data has 3-4 hour delay, 1-hour interval is optimal');
+    console.log('🌤️  Weather: Real-time data from Open-Meteo (Istanbul)');
     return dataCollectionJob;
 };
 exports.startDataCollection = startDataCollection;

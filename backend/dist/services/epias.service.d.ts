@@ -9,3 +9,15 @@ export declare const getRealTimeGeneration: () => Promise<any>;
  * @param endDate YYYY-MM-DD formatında bitiş tarihi
  */
 export declare const getHistoricalGeneration: (startDate: string, endDate: string) => Promise<any>;
+/**
+ * EPİAŞ'tan PTF (Piyasa Takas Fiyatı) verilerini çeker
+ * @param startDate YYYY-MM-DD formatında başlangıç tarihi
+ * @param endDate YYYY-MM-DD formatında bitiş tarihi
+ */
+export declare const getPtfData: (startDate: string, endDate: string) => Promise<any>;
+/**
+ * EPİAŞ'tan gerçek zamanlı tüketim verilerini çeker
+ * @param startDate YYYY-MM-DD formatında başlangıç tarihi
+ * @param endDate YYYY-MM-DD formatında bitiş tarihi
+ */
+export declare const getConsumptionData: (startDate: string, endDate: string) => Promise<any>;

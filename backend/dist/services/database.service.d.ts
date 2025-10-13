@@ -44,4 +44,45 @@ export declare const getEnergyStats: (hours?: number) => {
     hours: number;
 };
 export declare const logDataCollection: (status: string, recordsInserted: number, recordsUpdated: number, errorMessage?: string, executionTimeMs?: number) => void;
+interface PtfData {
+    date: string;
+    hour: string;
+    price: number;
+    priceUsd?: number;
+    priceEur?: number;
+}
+export declare const savePtfData: (data: any[]) => {
+    inserted: number;
+    updated: number;
+};
+export declare const getRecentPtfData: (hours?: number) => PtfData[];
+interface ConsumptionData {
+    date: string;
+    hour: string;
+    consumption: number;
+}
+export declare const saveConsumptionData: (data: any[]) => {
+    inserted: number;
+    updated: number;
+};
+export declare const getRecentConsumptionData: (hours?: number) => ConsumptionData[];
+interface WeatherData {
+    date: string;
+    hour: string;
+    temperature: number;
+    windspeed: number;
+    winddirection: number;
+    direct_radiation: number;
+    precipitation: number;
+    cloudcover: number;
+    humidity: number;
+    city: string;
+    latitude: number;
+    longitude: number;
+}
+export declare const saveWeatherData: (data: WeatherData[]) => {
+    inserted: number;
+    updated: number;
+};
+export declare const getRecentWeatherData: (hours?: number, city?: string) => WeatherData[];
 export {};
