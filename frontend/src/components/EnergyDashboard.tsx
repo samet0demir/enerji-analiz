@@ -655,39 +655,6 @@ const EnergyDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Real-time Data Table */}
-      <div className="data-table-section">
-        <h3>Son 10 Saatlik Veri</h3>
-        <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Saat</th>
-                <th>Toplam</th>
-                <th>Doğal Gaz</th>
-                <th>Rüzgar</th>
-                <th>Güneş</th>
-                <th>Hidro</th>
-                <th>Kömür</th>
-              </tr>
-            </thead>
-            <tbody>
-              {realtimeData.slice(-10).reverse().map((data, index) => (
-                <tr key={index}>
-                  <td>{data.hour}</td>
-                  <td>{data.total}</td>
-                  <td>{data.naturalGas}</td>
-                  <td>{data.wind}</td>
-                  <td>{data.sun}</td>
-                  <td>{data.dammedHydro}</td>
-                  <td>{data.importCoal}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <div className="last-update">
         <p>Son güncelleme: {new Date().toLocaleString('tr-TR')}</p>
         <button onClick={() => fetchData(false)} className="refresh-btn">🔄 Yenile</button>
